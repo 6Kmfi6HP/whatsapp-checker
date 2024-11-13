@@ -420,38 +420,6 @@ def save_results_to_excel(results):
         print(f"保存结果时发生错误: {e}")
         return None
 
-# def read_phone_numbers(filename):
-#     """从文件中读取���话号码，每行一个号码"""
-#     try:
-#         with open(filename, 'r') as file:
-#             return [line.strip() for line in file if line.strip()]
-#     except FileNotFoundError:
-#         print(f"错误：找不到文件 {filename}")
-#         return []
-#     except Exception as e:
-#         print(f"读取文件时发生错误：{e}")
-#         return []
-
-# def parse_arguments():
-#     """解析令行参数"""
-#     parser = argparse.ArgumentParser(description='WhatsApp 号码批量检查工具')
-    
-#     parser.add_argument(
-#         '-f', '--file',
-#         type=str,
-#         default='phone_numbers.txt',
-#         help='电话号码文件路径 (默认: phone_numbers.txt)'
-#     )
-    
-#     parser.add_argument(
-#         '-t', '--threads',
-#         type=int,
-#         default=5,
-#         help='线程数量 (默认: 5)'
-#     )
-    
-#     return parser.parse_args()
-
 # 新增：停止按钮回调处理
 @bot.callback_query_handler(func=lambda call: call.data.startswith('stop_'))
 def stop_checking(call):
