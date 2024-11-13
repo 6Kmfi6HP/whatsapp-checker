@@ -10,9 +10,6 @@ from telebot.handler_backends import State, StatesGroup
 from telebot.storage import StateMemoryStorage
 import os
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from openpyxl.drawing.image import Image
-from io import BytesIO
-from PIL import Image as PILImage
 from dotenv import load_dotenv
 
 # 状态定义
@@ -324,11 +321,11 @@ def check_single_number(number, total_count, current_index):
         return number, 'Unexpected error', None
 
 def save_results_to_excel(results):
-    """保存结果到Excel文件，包含头像"""
+    """保存结果到Excel文件"""
     try:
         # 创建数据列表
         data = []
-        for number, (status, avatar_url) in results.items():
+        for number, (status, _) in results.items():  # 忽略 avatar_url
             # 处理号码格式
             clean_number = number.strip()
             if clean_number.startswith('+'):
@@ -352,56 +349,10 @@ def save_results_to_excel(results):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'whatsapp_results_{timestamp}.xlsx'
         
-        # 保存到Excel，包含图片
+        # 保存到Excel
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
             df.to_excel(writer, index=False)
             worksheet = writer.sheets['Sheet1']
-            
-            # 插入一个空列作为头像列
-            worksheet.insert_cols(1)
-            worksheet.cell(row=1, column=1).value = 'Avatar'
-            
-            # 设置列宽和行高
-            worksheet.column_dimensions['A'].width = 6  # Avatar列宽度
-            
-            # 下载并插入头像
-            for idx, (number, (status, avatar_url)) in enumerate(results.items(), start=2):
-                if avatar_url:
-                    try:
-                        # 下载图片
-                        response = requests.get(avatar_url, timeout=10)
-                        img_data = BytesIO(response.content)
-                        
-                        # 使用PIL处理图片
-                        pil_image = PILImage.open(img_data)
-                        
-                        # 调整图片大小
-                        pil_image = pil_image.resize((30, 30))
-                        
-                        # 转换为PNG格式
-                        img_byte_arr = BytesIO()
-                        pil_image.save(img_byte_arr, format='PNG')
-                        img_byte_arr.seek(0)
-                        
-                        # 创建Excel图片对象
-                        img = Image(img_byte_arr)
-                        
-                        # 设置图片位置和大小
-                        img.width = 30
-                        img.height = 30
-                        
-                        # 使用字符串格式的单元格引用
-                        img.anchor = f'A{idx}'  # 直接使用字符串形式的单元格引用
-                        
-                        # 添加图片到工作表
-                        worksheet.add_image(img)
-                        
-                        # 设置行高以适应图片
-                        worksheet.row_dimensions[idx].height = 25
-                        
-                    except Exception as e:
-                        print(f"处理头像时出错: {e}")
-                        print(f"错误详情: {str(e)}")
             
             # 添加条件格式
             from openpyxl.styles import PatternFill
@@ -410,7 +361,7 @@ def save_results_to_excel(results):
             
             # 为已注册和未注册的行添加不同的背景色
             for row in worksheet.iter_rows(min_row=2):
-                registration_status = row[4].value  # Registration 列
+                registration_status = row[3].value  # Registration 列
                 fill = green_fill if registration_status == '已注册' else red_fill
                 for cell in row:
                     cell.fill = fill
