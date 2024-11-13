@@ -354,6 +354,21 @@ def save_results_to_excel(results):
             df.to_excel(writer, index=False)
             worksheet = writer.sheets['Sheet1']
             
+            # 自动调整列宽
+            for column in worksheet.columns:
+                max_length = 0
+                # 遍历该列的所有单元格以找到最长的内容
+                for cell in column:
+                    try:
+                        if len(str(cell.value)) > max_length:
+                            max_length = len(str(cell.value))
+                    except:
+                        pass
+                
+                # 设置列宽（稍微加宽一点以确保完全显示）
+                adjusted_width = (max_length + 2)
+                worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
+            
             # 添加条件格式
             from openpyxl.styles import PatternFill
             green_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')
